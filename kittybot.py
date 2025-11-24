@@ -1,12 +1,21 @@
 # kittybot/kittybot.py
-
 from telebot import TeleBot
 
-# Укажите токен, 
-# который вы получили от @Botfather при создании бот-аккаунта:
-bot = TeleBot(token='8254911274:AAFNWbrmJNuVS5nZ2-7HnacSRzskBxCZMU8')
-# Укажите id своего аккаунта в Telegram:
-chat_id = 412248518
-message = 'Вам телеграмма!'
-# Вызываем метод send_message, с помощью этого метода отправляются сообщения:
-bot.send_message(chat_id, message)
+bot = TeleBot(token='<token>')
+
+@bot.message_handler(commands=['start'])
+def wake_up(message):
+    chat = message.chat
+    name = chat.first_name
+    bot.send_message(
+        chat_id=chat.id,
+        text=f'Спасибо, что вы включили меня, {name}!'
+        )
+
+@bot.message_handler(content_types=['text'])
+def say_hi(message):
+    chat = message.chat
+    chat_id = chat.id
+    bot.send_message(chat_id=chat_id, text='Привет, я KittyBot!')
+
+bot.polling()

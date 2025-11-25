@@ -1,16 +1,49 @@
 # kittybot/kittybot.py
-from telebot import TeleBot
 
-bot = TeleBot(token='<token>')
+import requests
+from telebot import TeleBot, types
+
+bot = TeleBot(token='Here is the token for bot Kittybot @kittykittybot_bot:
+
+8254911274:AAFNWbrmJNuVS5nZ2-7HnacSRzskBxCZMU8')
+URL = 'https://api.thecatapi.com/v1/images/search'
+
+
+# Код запроса к thecatapi.com и обработку ответа обернём в функцию:
+def get_new_image():
+    response = requests.get(URL).json()
+    random_cat = response[0].get('url')
+    return random_cat
+
+
+@bot.message_handler(commands=['newcat'])
+def new_cat(message):
+    chat = message.chat
+    bot.send_photo(chat.id, get_new_image())
+
 
 @bot.message_handler(commands=['start'])
 def wake_up(message):
     chat = message.chat
-    name = chat.first_name
+    name = message.chat.first_name
+    # Создаём объект клавиатуры:
+    keyboard = types.ReplyKeyboardMarkup()
+    # Создаём объект кнопки:
+    button_newcat = types.KeyboardButton('/newcat')
+    # Добавляем объект кнопки на клавиатуру:
+    keyboard.add(button_newcat)
+
     bot.send_message(
         chat_id=chat.id,
-        text=f'Спасибо, что вы включили меня, {name}!'
-        )
+        text=f'Привет, {name}. Посмотри, какого котика я тебе нашёл',
+        # Отправляем клавиатуру в сообщении бота: передаём объект клавиатуры
+        # в параметр reply_markup объекта send_message.
+        # Telegram-клиент "запомнит" клавиатуру и будет отображать её в интерфейсе бота.
+        reply_markup=keyboard,
+    )
+
+    bot.send_photo(chat.id, get_new_image())
+
 
 @bot.message_handler(content_types=['text'])
 def say_hi(message):

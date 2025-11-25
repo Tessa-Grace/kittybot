@@ -3,9 +3,7 @@
 import requests
 from telebot import TeleBot, types
 
-bot = TeleBot(token='Here is the token for bot Kittybot @kittykittybot_bot:
-
-8254911274:AAFNWbrmJNuVS5nZ2-7HnacSRzskBxCZMU8')
+bot = TeleBot(token='<token>')
 URL = 'https://api.thecatapi.com/v1/images/search'
 
 

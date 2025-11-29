@@ -1,12 +1,51 @@
 # kittybot/kittybot.py
+import requests
+from telebot import TeleBot, types
+import os
 
-from telebot import TeleBot
+secret_token = os.getenv('TOKEN')
+bot = TeleBot(token=secret_token)
+URL = 'https://api.thecatapi.com/v1/images/search'
 
-# Укажите токен, 
-# который вы получили от @Botfather при создании бот-аккаунта:
-bot = TeleBot(token='8254911274:AAFNWbrmJNuVS5nZ2-7HnacSRzskBxCZMU8')
-# Укажите id своего аккаунта в Telegram:
-chat_id = 412248518
-message = 'Вам телеграмма!'
-# Вызываем метод send_message, с помощью этого метода отправляются сообщения:
-bot.send_message(chat_id, message)
+# Код запроса к thecatapi.com и обработку ответа обернём в функцию:
+def get_new_image():
+    response = requests.get(URL).json()
+    random_cat = response[0].get('url')
+    return random_cat
+
+
+@bot.message_handler(commands=['newcat'])
+def new_cat(message):
+    chat = message.chat
+    bot.send_photo(chat.id, get_new_image())
+
+
+@bot.message_handler(commands=['start'])
+def wake_up(message):
+    chat = message.chat
+    name = chat.first_name
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.row(  # Первая строка кнопок.
+        types.KeyboardButton('Который час?'),  # Создаём первую кнопку в строке.
+        types.KeyboardButton('Определи мой ip'),  # Создаём вторую кнопку в строке.
+    )
+    keyboard.row(  # Вторая строка кнопок.
+        types.KeyboardButton('/random_digit'),  # Создаём кнопку в строке.
+    )
+    
+    bot.send_message(
+        chat_id=chat.id,
+        text=f'Спасибо, что вы включили меня, {name}!',
+        reply_markup=keyboard,  # Отправляем пользователю текстовый ответ и клавиатуру.
+    )
+
+    bot.send_photo(chat.id, get_new_image())
+
+
+@bot.message_handler(content_types=['text'])
+def say_hi(message):
+    chat = message.chat
+    chat_id = chat.id
+    bot.send_message(chat_id=chat_id, text='Привет, я KittyBot!')
+
+bot.polling() 
